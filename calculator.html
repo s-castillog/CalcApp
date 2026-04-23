@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CALC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a;
+  --off-black: #111;
+  --panel: #161616;
+  --border: #2a2a2a;
+  --accent: #e8ff47;
+  --accent-dim: #b8cc2a;
+  --text: #f0f0f0;
+  --muted: #555;
+  --error: #ff4747;
+  --mono: 'DM Mono', monospace;
+  --display: 'Bebas Neue', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--black);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.bg-grid {
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+main {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 380px;
+  padding: 2rem 1.5rem;
+  animation: fadeUp 0.5s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+header {
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--accent);
+  padding-left: 1rem;
+}
+.logo {
+  font-family: var(--display);
+  font-size: 5rem; line-height: 1;
+  color: var(--accent); letter-spacing: 0.05em;
+}
+.subtitle {
+  font-size: 0.6rem; letter-spacing: 0.2em;
+  color: var(--muted); text-transform: uppercase; margin-top: 0.2rem;
+}
+.shell {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent);
+  padding: 1.5rem;
+}
+.display {
+  background: var(--off-black);
+  border: 1px solid var(--border);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  min-height: 90px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  position: relative;
+}
+.display-label {
+  position: absolute; top: 0.5rem; left: 0.9rem;
+  font-size: 0.5rem; letter-spacing: 0.25em;
+  color: var(--muted); text-transform: uppercase;
+}
+#expression {
+  font-size: 0.7rem; color: var(--muted);
+  letter-spacing: 0.08em; min-height: 1em; margin-bottom: 0.2rem;
+}
+#result {
+  font-family: var(--display);
+  font-size: 2.8rem; line-height: 1;
+  color: var(--accent); word-break: break-all;
+  transition: color 0.15s;
+}
+#result.placeholder { color: var(--border); }
+#result.is-error    { color: var(--error); font-size: 1rem; font-family: var(--mono); padding-bottom: 0.3rem; }
+.btn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+}
+button {
+  background: var(--off-black);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 1rem;
+  padding: 0.9rem 0;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, transform 0.08s;
+  user-select: none;
+}
+button:hover  { background: #1e1e1e; border-color: #444; }
+button:active { transform: scale(0.94); }
+button.op {
+  color: var(--accent);
+  border-color: #333;
+  font-size: 1.1rem;
+}
+button.op:hover { background: #1a1f00; border-color: var(--accent-dim); }
+button.action {
+  color: var(--black);
+  background: var(--accent);
+  border-color: var(--accent);
+  font-weight: 500;
+}
+button.action:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+button.clear { color: var(--error); border-color: #3a1818; }
+button.clear:hover { background: #1f0f0f; border-color: var(--error); }
+button.zero { grid-column: span 2; text-align: left; padding-left: 1.4rem; }
+footer {
+  margin-top: 1.25rem;
+  font-size: 0.55rem; letter-spacing: 0.15em;
+  color: var(--muted); text-align: center; text-transform: uppercase;
+}
+footer span { margin: 0 0.4rem; }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<main>
+  <header>
+    <div class="logo">CALC</div>
+    <div class="subtitle">No install · Open in browser · Azure Static Web Apps ready</div>
+  </header>
+
+  <div class="shell">
+    <div class="display">
+      <div class="display-label">DISPLAY</div>
+      <div id="expression">&nbsp;</div>
+      <div id="result" class="placeholder">0</div>
+    </div>
+
+    <div class="btn-grid">
+      <button class="clear" onclick="clearAll()">AC</button>
+      <button class="clear" onclick="toggleSign()">+/−</button>
+      <button class="op"    onclick="inputPercent()">%</button>
+      <button class="op"    onclick="inputOp('/')">÷</button>
+
+      <button onclick="inputDigit('7')">7</button>
+      <button onclick="inputDigit('8')">8</button>
+      <button onclick="inputDigit('9')">9</button>
+      <button class="op" onclick="inputOp('*')">×</button>
+
+      <button onclick="inputDigit('4')">4</button>
+      <button onclick="inputDigit('5')">5</button>
+      <button onclick="inputDigit('6')">6</button>
+      <button class="op" onclick="inputOp('-')">−</button>
+
+      <button onclick="inputDigit('1')">1</button>
+      <button onclick="inputDigit('2')">2</button>
+      <button onclick="inputDigit('3')">3</button>
+      <button class="op" onclick="inputOp('+')">+</button>
+
+      <button class="zero" onclick="inputDigit('0')">0</button>
+      <button onclick="inputDot()">.</button>
+      <button class="action" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <footer>
+    <span>Pure HTML · CSS · JS</span>
+    <span>·</span>
+    <span>No framework · No install</span>
+  </footer>
+</main>
+
+<script>
+  let current     = '0';
+  let previous    = null;
+  let operator    = null;
+  let freshResult = false;
+
+  const resultEl     = document.getElementById('result');
+  const expressionEl = document.getElementById('expression');
+
+  function formatNumber(val) {
+    const n = parseFloat(val);
+    if (isNaN(n)) return val;
+    const str = parseFloat(n.toPrecision(10)).toString();
+    return str.length > 14 ? n.toExponential(6) : str;
+  }
+
+  function updateDisplay(val, isError = false) {
+    resultEl.classList.remove('placeholder');
+    resultEl.classList.toggle('is-error', isError);
+    resultEl.textContent = isError ? val : formatNumber(val);
+  }
+
+  function inputDigit(d) {
+    if (freshResult) { current = d; freshResult = false; }
+    else current = current === '0' ? d : current + d;
+    updateDisplay(current);
+  }
+
+  function inputDot() {
+    if (freshResult) { current = '0.'; freshResult = false; }
+    else if (!current.includes('.')) current += '.';
+    updateDisplay(current);
+  }
+
+  function inputOp(op) {
+    if (operator && !freshResult) calculate(true);
+    previous = parseFloat(current);
+    operator = op;
+    freshResult = true;
+    const sym = { '+': '+', '-': '−', '*': '×', '/': '÷' }[op] || op;
+    expressionEl.textContent = `${formatNumber(String(previous))} ${sym}`;
+  }
+
+  function inputPercent() {
+    current = String(parseFloat(current) / 100);
+    updateDisplay(current);
+  }
+
+  function toggleSign() {
+    current = String(parseFloat(current) * -1);
+    updateDisplay(current);
+  }
+
+  function calculate(chaining = false) {
+    if (previous === null || operator === null) return;
+    const a = previous;
+    const b = parseFloat(current);
+    const sym = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator] || operator;
+
+    if (!chaining) {
+      expressionEl.textContent = `${formatNumber(String(a))} ${sym} ${formatNumber(String(b))} =`;
+    }
+
+    let res;
+    switch (operator) {
+      case '+': res = a + b; break;
+      case '-': res = a - b; break;
+      case '*': res = a * b; break;
+      case '/':
+        if (b === 0) {
+          updateDisplay('Cannot divide by zero', true);
+          expressionEl.textContent = '';
+          operator = null; previous = null;
+          return;
+        }
+        res = a / b; break;
+      default: return;
+    }
+
+    current = String(res);
+    operator = null;
+    previous = null;
+    freshResult = true;
+    updateDisplay(current);
+  }
+
+  function clearAll() {
+    current = '0'; previous = null; operator = null; freshResult = false;
+    resultEl.className = 'placeholder';
+    resultEl.textContent = '0';
+    expressionEl.innerHTML = '&nbsp;';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key >= '0' && e.key <= '9') inputDigit(e.key);
+    else if (e.key === '.') inputDot();
+    else if (e.key === '+') inputOp('+');
+    else if (e.key === '-') inputOp('-');
+    else if (e.key === '*') inputOp('*');
+    else if (e.key === '/') { e.preventDefault(); inputOp('/'); }
+    else if (e.key === 'Enter' || e.key === '=') calculate();
+    else if (e.key === 'Escape') clearAll();
+    else if (e.key === 'Backspace') {
+      if (current.length > 1) current = current.slice(0, -1);
+      else current = '0';
+      updateDisplay(current);
+    }
+  });
+</script>
+</body>
+</html>
